@@ -24,7 +24,7 @@ func main() {
 	class.Students.Store("Qian", "class 2")
 	class.Students.Store("Sun", "class 3")
 
-	//遍历
+	//遍 历
 	class.Students.Range(handler)
 
 	//查询
