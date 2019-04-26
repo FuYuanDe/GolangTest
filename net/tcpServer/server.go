@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	LocalAddr, err := net.ResolveTCPAddr("tcp", ":3600")
+	LocalAddr, err := net.ResolveTCPAddr("tcp", "172.25.1.90:3600")
 	if err != nil {
 		fmt.Errorf("%s", err.Error())
 		return
