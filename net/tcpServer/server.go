@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	LocalAddr, err := net.ResolveTCPAddr("tcp", "172.25.1.90:3600")
+	LocalAddr, err := net.ResolveTCPAddr("tcp", ":3600")
 	if err != nil {
 		fmt.Errorf("%s", err.Error())
 		return
@@ -40,15 +40,19 @@ func main() {
 func handleTcpClient(conn *net.TCPConn) {
 	var buf []byte = make([]byte, 100, 1000)
 
-	conn.SetKeepAlivePeriod(time.Second * 1)
+	//conn.SetKeepAlivePeriod(time.Second * 1)
 	conn.SetKeepAlive(true)
 	fmt.Println("-->reading now")
-	readLen, err := conn.Read(buf)
-	if err != nil {
-		fmt.Errorf("%s", err.Error())
-	} else {
-		fmt.Printf("receive msg length :%d, msg :%s", readLen, string(buf))
+	for {
+		readLen, err := conn.Read(buf)
+		if err != nil {
+			fmt.Errorf("%s", err.Error())
+			break
+		} else {
+			fmt.Printf("receive msg length :%d, msg :%s\n", readLen, string(buf))
+		}
 	}
+
 	time.Sleep(2 * time.Second)
 	conn.Close()
 }

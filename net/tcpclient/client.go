@@ -45,9 +45,10 @@ func GetIP(addr string) (string, error) {
 }
 
 func main() {
-	var buf []byte
+	buffer := make(chan []byte, 100)
 
-	SrvAddr, err := net.ResolveTCPAddr("tcp", "172.25.1.90:3600")
+	SrvAddr, err := net.ResolveTCPAddr("tcp", "172.25.1.192:49")
+	//SrvAddr, err := net.ResolveTCPAddr("tcp", "172.25.100.240:3600")
 	if err != nil {
 		fmt.Errorf("%s", err.Error())
 		return
@@ -78,24 +79,39 @@ func main() {
 	} else {
 		fmt.Printf("IP:%s", ip)
 	}
-	for {
-		fmt.Println("sending msg to server")
-		writeLen, err := conn.Write([]byte("hello server"))
-		if err != nil {
-			fmt.Errorf("%s", err.Error())
-		} else {
-			fmt.Println("-->sending msg to server success, msg length :%d", writeLen)
+	go func() {
+		//Buf := make([]byte, 1024)
+		Buf := []byte("c00l010000000000000000000000000")
+		for {
+			select {
+			case _ = <-buffer:
+				//case buf := <-buffer:
+				//copy(Buf, buf)
+				//data := Buf[:len(buf)]
+
+				//writeLen, err := conn.Write(buf[0:])
+				writeLen, err := conn.Write(Buf)
+				if err != nil {
+					fmt.Errorf("%s", err.Error())
+				} else {
+					fmt.Printf("-->sending msg to server success, msg length :%d", writeLen)
+				}
+			}
 		}
-		time.Sleep(time.Second * 2)
+	}()
+	var count int
+	for {
+		if count > 2 {
+			break
+		} else {
+			count++
+		}
+		fmt.Println("send to server")
+		buf := []byte("hello server")
+		buffer <- buf
+		time.Sleep(time.Second * 3)
 	}
 
-	fmt.Println("enter reading...")
-	_, err = conn.Read(buf)
-	if err != nil {
-		fmt.Errorf("%s", err.Error())
-		return
-	}
-	fmt.Println("server close")
 	conn.Close()
 	time.Sleep(20 * time.Second)
 	return
