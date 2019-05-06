@@ -107,19 +107,40 @@ func withValue() {
 
 }
 func main() {
-	type ContextKey string
+	//定义一个空的ctx
+	rootCtx := context.TODO()
 
-	f := func(ctx context.Context, k ContextKey) {
-		if v := ctx.Value(k); v != nil {
-			fmt.Println("found value:", v)
-			return
+	//从根ctx衍生子ctx
+	ctx, cancel := context.WithCancel(rootCtx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Printf("cancel called, gorouting 1 exit\n")
+				return
+			case <-time.After(1 * time.Second):
+				fmt.Println("gorouting 1 running...")
+			}
 		}
-		fmt.Println("key not found:", k)
-	}
+	}()
 
-	k := ContextKey("language")
-	ctx := context.WithValue(context.Background(), k, "Go")
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Printf("cancel called, gorouting 2 exit\n")
+				return
+			case <-time.After(1 * time.Second):
+				fmt.Println("gorouting 2 running...")
+			}
+		}
+	}()
 
-	f(ctx, k)
-	f(ctx, ContextKey("color"))
+	fmt.Println("main routing sleep 3s")
+	time.Sleep(time.Second * 3)
+	//调用cancel取消子线程
+	cancel()
+	fmt.Println("main routing call cancel")
+	time.Sleep(1 * time.Second)
+
 }
